@@ -1,0 +1,90 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Socket.IO chat</title>
+    <style>
+     
+    </style>
+  </head>
+  <body style="background-color:darkgray">
+
+    <div style="width: 304px; margin: 100px auto">
+
+    <div id="hideNameDiv">
+      <form id="formName" action="">
+          <input id="inputNameId" autocomplete="off" type="text" required oninvalid="this.setCustomValidity('Please Enter Your NICK')" oninput="this.setCustomValidity('')"> 
+          <button>Enter Your Name</button>
+        </form>
+    </div>
+
+    <br>
+
+    <div id="chat" style="display:none">
+
+      <form id="formID" action="">
+        <input id="inputID" autocomplete="off" type="text" required oninvalid="this.setCustomValidity('Please Enter Message')" oninput="this.setCustomValidity('')">
+        <button>Send</button>
+      </form>
+
+      <br>
+
+      <div class="chat" style="overflow-y: auto; height:200px;border:2px solid rgb(73, 65, 65);width:300px;background-color:aqua">
+        <span id="span"></span>           
+          <% result.reverse().forEach(function(d) { %>
+            <% if(d.text !== undefined){ %>
+              <p id="p"><%= d.name %> - <%= d.text %> <br> <%= d.date %> </p>
+            <% } %>
+          <% }); %>
+      </div>
+
+    </div>
+  
+  </div>
+  </body>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+  <script>
+    
+    $(function () {
+      
+      var socket = io();
+      
+      // send Name
+      $("#formName").submit(function(){
+        socket.emit("user name", $("#inputNameId").val());
+        $("#inputNameId").val("");
+        $("#sameName").css("display","none") 
+        return false;
+      });
+      
+      // check name and show chat content
+      socket.on("name", function(checkName, checkSocketId){
+        if(checkName && checkSocketId === socket.id){
+          $("#hideNameDiv").hide();
+          $("#chat").css("display", "block");
+        }
+        // else { 
+        //   $("#hideNameDiv").after($('<p id="sameName" style="font-size:30px">').text("THAT NICK EXISTS"));
+          
+        // }
+      });
+
+      // send message to server
+      $("#formID").submit(function(){   
+        socket.emit("from input",$('#inputID').val());
+        $('#inputID').val('');
+        return false;       
+      });
+      
+      // add messages to chat content
+      socket.on('to input', function(newlycreated){
+        var p = $("<p>" + newlycreated.name + " - " + newlycreated.text +"<br>" + newlycreated.date + "</p>")
+        $("#span").prepend(p);
+      });
+
+    });
+  
+  </script>
+
+</html>
